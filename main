@@ -1,0 +1,54 @@
+-- Function to create a new folder
+local function createFolder(parent, folderName)
+    local newFolder = Instance.new("Folder")
+    newFolder.Name = folderName
+    newFolder.Parent = parent
+    return newFolder
+end
+
+-- Function to check if a given instance is a sound
+local function isSound(instance)
+    return instance:IsA("Sound") or instance:IsA("SoundGroup")
+end
+
+-- Function to recursively search for sounds and clone them into folders
+local function organizeSounds(folder, currentInstance)
+    for _, child in ipairs(currentInstance:GetChildren()) do
+        if isSound(child) then
+            child:Clone().Parent = folder
+        elseif child:IsA("Folder") then
+            local newFolder = createFolder(folder, child.Name)
+            organizeSounds(newFolder, child)
+            if #newFolder:GetChildren() == 0 then
+                newFolder:Destroy()
+            end
+        end
+    end
+end
+
+-- Create the main folder
+local receivedSoundsFolder = createFolder(workspace, "ReceivedSounds")
+
+-- Search for sounds in the Workspace
+local progressText = Instance.new("TextLabel")
+progressText.Size = UDim2.new(1, 0, 0, 30)
+progressText.Position = UDim2.new(0, 0, 0, 0)
+progressText.BackgroundColor3 = Color3.new(0, 0, 0)
+progressText.BackgroundTransparency = 0.5
+progressText.Font = Enum.Font.SourceSans
+progressText.TextColor3 = Color3.new(1, 1, 1)
+progressText.TextSize = 18
+progressText.Text = "Organizing sounds..."
+progressText.Parent = game:GetService("CoreGui")
+
+organizeSounds(receivedSoundsFolder, workspace)
+
+-- Search for sounds in StarterGui
+organizeSounds(receivedSoundsFolder, game:GetService("StarterGui"))
+
+-- Additional folders can be added here as needed
+
+progressText:Destroy()
+
+-- Print a message when the script has finished running
+print("Sound organization script complete!")
